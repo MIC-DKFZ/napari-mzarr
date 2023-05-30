@@ -1,11 +1,7 @@
-"""
-This module is an example of a barebones numpy reader plugin for napari.
-
-It implements the Reader specification, but your plugin may choose to
-implement multiple readers or even other plugin contributions. see:
-https://napari.org/stable/plugins/guides.html?#readers
-"""
-import numpy as np
+import dask.array as da
+import zarr
+import numcodecs
+from imagecodecs.numcodecs import JpegXl
 
 
 def napari_get_reader(path):
@@ -29,7 +25,7 @@ def napari_get_reader(path):
         path = path[0]
 
     # if we know we cannot read the file, we immediately return None.
-    if not path.endswith(".npy"):
+    if not path.endswith(".mzarr"):
         return None
 
     # otherwise we return the *function* that can read ``path``.
@@ -58,15 +54,20 @@ def reader_function(path):
         layer. Both "meta", and "layer_type" are optional. napari will
         default to layer_type=="image" if not provided
     """
-    # handle both a string and a list of strings
-    paths = [path] if isinstance(path, str) else path
-    # load all files into array
-    arrays = [np.load(_path) for _path in paths]
-    # stack arrays into single array
-    data = np.squeeze(np.stack(arrays))
+    numcodecs.register_codec(JpegXl)
+    grp = zarr.open(zarr.ZipStore(path, mode='r'), mode="r")
+
+    multiscale = grp.attrs["multiscale"]
+    data = [
+        # da.from_zarr(grp, component=d["path"]) for d in multiscales["datasets"]
+        da.from_zarr(grp[d["path"]]) for d in multiscale["datasets"]
+    ]
 
     # optional kwargs for the corresponding viewer.add_* method
     add_kwargs = {}
 
-    layer_type = "image"  # optional, default is "image"
+    if grp.attrs["seg"]:
+        layer_type = "labels"
+    else:
+        layer_type = "image"
     return [(data, add_kwargs, layer_type)]

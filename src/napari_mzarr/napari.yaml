@@ -14,11 +14,11 @@ contributions:
   readers:
     - command: napari-mzarr.get_reader
       accepts_directories: false
-      filename_patterns: ['*.npy']
+      filename_patterns: ['*.mzarr']
   writers:
     - command: napari-mzarr.write_multiple
       layer_types: ['image*','labels*']
       filename_extensions: []
     - command: napari-mzarr.write_single_image
       layer_types: ['image']
-      filename_extensions: ['.npy']
+      filename_extensions: ['.mzarr']
