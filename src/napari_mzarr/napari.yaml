@@ -1,0 +1,24 @@
+name: napari-mzarr
+display_name: Napari Mzarr
+contributions:
+  commands:
+    - id: napari-mzarr.get_reader
+      python_name: napari_mzarr._reader:napari_get_reader
+      title: Open data with Napari Mzarr
+    - id: napari-mzarr.write_multiple
+      python_name: napari_mzarr._writer:write_multiple
+      title: Save multi-layer data with Napari Mzarr
+    - id: napari-mzarr.write_single_image
+      python_name: napari_mzarr._writer:write_single_image
+      title: Save image data with Napari Mzarr
+  readers:
+    - command: napari-mzarr.get_reader
+      accepts_directories: false
+      filename_patterns: ['*.npy']
+  writers:
+    - command: napari-mzarr.write_multiple
+      layer_types: ['image*','labels*']
+      filename_extensions: []
+    - command: napari-mzarr.write_single_image
+      layer_types: ['image']
+      filename_extensions: ['.npy']
